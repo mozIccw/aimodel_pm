@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Protein Bar Optimizer</title>
+    <style>
+        .delete-icon {
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+        
+
+        <div class="row col-md-12 cstm full-height">
+		<div class="col-md-12">
+		<div class="cstmbg">
+		<h3 class="text-center">Protein Bar Optimization with AI</h3>
+		</div>
+		</div>
+            <!-- Form Section -->
+            <div class="col-md-8">
+                <form method="POST">
+                   
+					<h5 class="text-left" style="color: #2897a7;font-family: system-ui;margin-bottom: 2%;">Select Predefined Ingredients:</h5>
+                  
+					<div id="predefined-ingredients" class="mb-3">
+				{% for ingredient in ["Chicken", "Beef", "Mutton", "Rice", "Wheat bran", "Corn", "Peanuts", "Soya", "Egg", "Milk"] %}
+					<label class="custom-checkbox">
+						<input type="checkbox" name="predefined" value="{{ ingredient }}" onchange="addPredefinedIngredient(this)">
+						<span class="checkmark"></span> {{ ingredient }}
+					</label>
+				{% endfor %}
+			</div>
+
+
+                  
+                    <div id="custom-ingredients" class="mb-3"></div>
+					 <div class="text-center">
+                    <button type="button" class="btn btn-success mb-3 " onclick="addCustomIngredient()" style="font-weight: 600;background: #04908d;border-radius: 50px;border-color: #2dbfd4bf;">Add Custom Ingredient</button>
+					</div>
+                    <h5 class="text-left" style="color: #2897a7;font-family: system-ui;">Selected Ingredients:</h5>
+                    <table class="table table-bordered" id="ingredients-table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Protein</th>
+                                <th>Fat</th>
+                                <th>Fibre</th>
+                                <th>Salt</th>
+                                <th>Sugar</th>
+                                <th>Cost</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+				<div class="cstmbg">
+                    <button type="submit" class="btn btn-success" style="font-weight: 800;background: #04908d;border-radius: 50px;border-color: #2dbfd4bf;">Optimize</button>
+				</div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+         <!-- Results Section -->
+<div class="col-md-4 cstm">
+    {% if results %}
+        <h4 class="text-center" style="color: #2897a7; font-family: system-ui;">Optimization Results</h4>
+        {% if results.error %}
+            <p class="text-danger">{{ results.error }}</p>
+        {% else %}
+            <div class="cstmbg" style="background: {% if results.status == 'Optimal' or results.status == 'Feasible' %}#4CAF50{% else %}#e74c3c{% endif %}; color: white;">
+                <p><strong>Total Cost:</strong> ${{ "%.2f"|format(results.cost) }}</p>
+                <p><strong>Status:</strong> {{ results.status }}</p>
+            </div>
+            <ul class="list-group">
+                {% for var, value in results.variables %}
+                    <li class="list-group-item">{{ var }}: {{ value }} g</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+</div>
+
+        </div>
+    
+
+    <script>
+        function addPredefinedIngredient(checkbox) {
+            const tableBody = document.getElementById('table-body');
+            const ingredient = checkbox.value;
+            const type = ["Chicken", "Beef", "Mutton"].includes(ingredient) ? "Non-Veg" : "Veg";
+            const rowId = `row-${ingredient}`;
+
+            const predefinedData = {
+                "Chicken": { protein: 0.100, fat: 0.080, fibre: 0.001, salt: 0.002, sugar: 0.000, cost: 0.095 },
+                "Beef": { protein: 0.200, fat: 0.100, fibre: 0.005, salt: 0.005, sugar: 0.000, cost: 0.150 },
+                "Mutton": { protein: 0.150, fat: 0.110, fibre: 0.003, salt: 0.007, sugar: 0.000, cost: 0.100 },
+                "Rice": { protein: 0.000, fat: 0.010, fibre: 0.100, salt: 0.002, sugar: 0.000, cost: 0.002 },
+                "Wheat bran": { protein: 0.040, fat: 0.010, fibre: 0.150, salt: 0.008, sugar: 0.000, cost: 0.005 },
+                "Corn": { protein: 0.0329, fat: 0.0128, fibre: 0.0280, salt: 0.000, sugar: 0.045, cost: 0.012 },
+                "Peanuts": { protein: 0.258, fat: 0.492, fibre: 0.085, salt: 0.001, sugar: 0.047, cost: 0.013 },
+                "Soya": { protein: 0.2434, fat: 0.2352, fibre: 0.029, salt: 0.0015, sugar: 0.050, cost: 0.100 },
+				"Egg": {"protein": 0.025, "fat": 0.100, "fibre": 0.040, "salt": 0.0005, "sugar": 0.001, "cost": 0.001},
+				"Milk": {"protein": 0.010, "fat": 0.170, "fibre": 0.010, "salt": 0.0005, "sugar": 0.002, "cost": 0.005}
+
+            };
+
+            if (checkbox.checked) {
+                const data = predefinedData[ingredient];
+
+                const row = `
+                    <tr id="${rowId}">
+                        <td><input type="hidden" name="ingredient" value="${ingredient}">${ingredient}</td>
+                        <td>${type}</td>
+                        <td><input type="hidden" name="protein" value="${data.protein}">${data.protein}</td>
+                        <td><input type="hidden" name="fat" value="${data.fat}">${data.fat}</td>
+                        <td><input type="hidden" name="fibre" value="${data.fibre}">${data.fibre}</td>
+                        <td><input type="hidden" name="salt" value="${data.salt}">${data.salt}</td>
+                        <td><input type="hidden" name="sugar" value="${data.sugar}">${data.sugar}</td>
+                        <td><input type="hidden" name="cost" value="${data.cost}">${data.cost}</td>
+                        <td><span class="delete-icon" onclick="deleteRow('${rowId}')">&#x2716;</span></td>
+                    </tr>`;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            } else {
+                deleteRow(rowId);
+            }
+        }
+
+        function addCustomIngredient() {
+            const tableBody = document.getElementById('table-body');
+            const rowId = `custom-${Date.now()}`;
+            const row = document.createElement('tr');
+            row.id = rowId;
+            row.innerHTML = `
+                <td><input type="text" name="ingredient" class="form-control" placeholder="Ingredient" required></td>
+                <td>
+                    <select name="type" class="form-control" required>
+                        <option value="Veg">Veg</option>
+                        <option value="Non-Veg">Non-Veg</option>
+                    </select>
+                </td>
+                <td><input type="number" step="0.0001" name="protein" class="form-control" placeholder="in gram" required></td>
+                <td><input type="number" step="0.0001" name="fat" class="form-control" placeholder="in gram" required></td>
+                <td><input type="number" step="0.0001" name="fibre" class="form-control" placeholder="in gram" required></td>
+                <td><input type="number" step="0.0001" name="salt" class="form-control" placeholder="in gram" required></td>
+                <td><input type="number" step="0.0001" name="sugar" class="form-control" placeholder="in gram" required></td>
+                <td><input type="number" step="0.0001" name="cost" class="form-control" placeholder="$ per gram" required  style="width:90px;"></td>
+                <td><span class="delete-icon" onclick="deleteRow('${rowId}')">&#x2716;</span></td>`;
+            tableBody.appendChild(row);
+        }
+
+        function deleteRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) row.remove();
+        }
+    </script>
+</body>
+</html>
