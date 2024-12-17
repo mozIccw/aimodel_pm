@@ -22,7 +22,7 @@
         <div class="row col-md-12 cstm full-height">
 		<div class="col-md-12">
 		<div class="cstmbg">
-		<h3 class="text-center">Protein Bar Optimization with AI</h3>
+		<h4 class="text-center">Protein Bar Optimization with AI</h4>
 		</div>
 		</div>
             <!-- Form Section -->
@@ -70,25 +70,29 @@
             </div>
 
             <!-- Results Section -->
-         <!-- Results Section -->
-<div class="col-md-4 cstm">
-    {% if results %}
-        <h4 class="text-center" style="color: #2897a7; font-family: system-ui;">Optimization Results</h4>
-        {% if results.error %}
-            <p class="text-danger">{{ results.error }}</p>
-        {% else %}
-            <div class="cstmbg" style="background: {% if results.status == 'Optimal' or results.status == 'Feasible' %}#4CAF50{% else %}#e74c3c{% endif %}; color: white;">
-                <p><strong>Total Cost:</strong> ${{ "%.2f"|format(results.cost) }}</p>
-                <p><strong>Status:</strong> {{ results.status }}</p>
-            </div>
-            <ul class="list-group">
-                {% for var, value in results.variables %}
-                    <li class="list-group-item">{{ var }}: {{ value }} g</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endif %}
-</div>
+				<div class="col-md-4 cstm">
+					{% if results %}
+						<h4 class="text-center" style="color: #2897a7; font-family: system-ui;">Optimization Results</h4>
+						{% if results.error %}
+							<p class="text-danger">{{ results.error }}</p>
+						{% else %}
+							<div class="cstmbg" style="background: {% if results.status == 'Optimal' or results.status == 'Feasible' %}#4CAF50{% else %}#e74c3c{% endif %}; color: white; display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 70px; padding: 10px;font-size: 18px;font-weight: 800;">
+								<p style="margin: 0;"><strong>Total Cost:</strong> ${{ "%.2f"|format(results.cost) }}</p>
+								<p style="margin: 0;"><strong>Status:</strong> {{ results.status }}</p>
+							</div>
+
+							<ul class="list-group">
+								{% for var, value in results.variables %}
+									<li class="list-group-item" style="background-color: {% if value == 0 %}#ffcccc{% else %}#4caf5099{% endif %};">
+										{{ var }}: {{ value }} g
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					{% endif %}
+				</div>
+
+
 
         </div>
     
@@ -108,9 +112,9 @@
                 "Wheat bran": { protein: 0.040, fat: 0.010, fibre: 0.150, salt: 0.008, sugar: 0.000, cost: 0.005 },
                 "Corn": { protein: 0.0329, fat: 0.0128, fibre: 0.0280, salt: 0.000, sugar: 0.045, cost: 0.012 },
                 "Peanuts": { protein: 0.258, fat: 0.492, fibre: 0.085, salt: 0.001, sugar: 0.047, cost: 0.013 },
-                "Soya": { protein: 0.2434, fat: 0.2352, fibre: 0.029, salt: 0.0015, sugar: 0.050, cost: 0.100 },
-				"Egg": {"protein": 0.025, "fat": 0.100, "fibre": 0.040, "salt": 0.0005, "sugar": 0.001, "cost": 0.001},
-				"Milk": {"protein": 0.010, "fat": 0.170, "fibre": 0.010, "salt": 0.0005, "sugar": 0.002, "cost": 0.005}
+                "Soya": { protein: 0.2434, fat: 0.2352, fibre: 0.029, salt: 0.0015, sugar: 0.050, cost: 0.1 },
+				"Egg": {"protein": 0.100, "fat": 0.040, "fibre": 0.0005, "salt": 0.001, "sugar": 0.000, "cost": 0.025},
+				"Milk": {"protein": 0.170, "fat": 0.010, "fibre": 0.0005, "salt": 0.002, "sugar": 0.005, "cost": 0.010}
 
             };
 

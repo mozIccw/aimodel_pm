@@ -14,15 +14,14 @@ predefined_data = {
     "Wheat bran": [0.040, 0.010, 0.150, 0.008, 0.000, 0.005],
     "Corn": [0.0329, 0.0128, 0.028, 0.000, 0.045, 0.012],
     "Peanuts": [0.258, 0.492, 0.085, 0.001, 0.047, 0.013],
-    "Soya": [0.2434, 0.2352, 0.029, 0.0015, 0.050, 0.011],
-    "Egg": [0.025, 0.100, 0.040, 0.0005, 0.001, 0.001],
-    "Milk": [0.010, 0.170, 0.010, 0.0005, 0.002, 0.005],
+    "Soya": [0.2434, 0.2352, 0.029, 0.0015, 0.050, 0.1],
+    "Egg": [0.100, 0.040, 0.0005, 0.001, 0.000, 0.025],
+    "Milk": [0.170, 0.010, 0.0005, 0.002, 0.005, 0.010],
 }
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = None
-    table_data = []
 
     if request.method == "POST":
         # Collect predefined ingredients from form
@@ -52,24 +51,27 @@ def index():
         model += lpSum([dict_costs[i] * x[i] for i in variables])
 
         # Constraints
-        model += lpSum([x[i] for i in variables]) == 120
-        model += lpSum([x[i] * nutrition.loc[i, "Protein"] for i in variables]) >= 22
-        model += lpSum([x[i] * nutrition.loc[i, "Fat"] for i in variables]) <= 22
-        model += lpSum([x[i] * nutrition.loc[i, "Fibre"] for i in variables]) >= 6
-        model += lpSum([x[i] * nutrition.loc[i, "Salt"] for i in variables]) <= 3
-        model += lpSum([x[i] * nutrition.loc[i, "Sugar"] for i in variables]) <= 20
+        model += lpSum([x[i] for i in variables]) == 120, "Total_Quantity"
+        model += lpSum([x[i] * nutrition.loc[i, "Protein"] for i in variables]) >= 22, "Min_Protein"
+        model += lpSum([x[i] * nutrition.loc[i, "Fat"] for i in variables]) <= 22, "Max_Fat"
+        model += lpSum([x[i] * nutrition.loc[i, "Fibre"] for i in variables]) >= 6, "Min_Fibre"
+        model += lpSum([x[i] * nutrition.loc[i, "Salt"] for i in variables]) <= 3, "Max_Salt"
+        model += lpSum([x[i] * nutrition.loc[i, "Sugar"] for i in variables]) <= 20, "Max_Sugar"
 
         # Solve the model
         status = model.solve()
 
-        # Collect results
+       # Collect results
         results = {
-            "cost": round(value(model.objective), 2),
+            "cost": round(value(model.objective), 4),
             "status": LpStatus[status],
-            "variables": [(v.name, round(v.varValue, 2)) for v in model.variables() if v.varValue > 0],
+            "variables": [(f"Qty_{ingredient}", round(x[ingredient].varValue, 4)) for ingredient in variables],
         }
+
 
     return render_template("index.html", results=results)
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
+    
