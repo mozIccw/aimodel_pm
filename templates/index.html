@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
     <title>Protein Bar Optimizer</title>
     <style>
         .delete-icon {
@@ -29,20 +32,29 @@
             <div class="col-md-8">
                 <form method="POST">
                    
-					<h5 class="text-left" style="color: #2897a7;font-family: system-ui;margin-bottom: 2%;">Select Predefined Ingredients:</h5>
-                  
-					<div id="predefined-ingredients" class="mb-3">
-				{% for ingredient in ["Chicken", "Beef", "Mutton", "Rice", "Wheat bran", "Corn", "Peanuts", "Soya", "Egg", "Milk"] %}
-					<label class="custom-checkbox">
-						<input type="checkbox" name="predefined" value="{{ ingredient }}" onchange="addPredefinedIngredient(this)">
-						<span class="checkmark"></span> {{ ingredient }}
-					</label>
-				{% endfor %}
-			</div>
+				<h5 class="text-left" style="color: #2897a7; font-family: system-ui; margin-bottom: 2%;">Select Predefined Ingredients:</h5>
+
+				
+
+				<!-- Predefined Ingredients Checkboxes -->
+				<div id="predefined-ingredients" class="mb-3">
+					{% for ingredient in ["Chicken", "Beef", "Mutton", "Rice", "Wheat bran", "Corn", "Peanuts", "Soya", "Egg", "Milk"] %}
+						<label class="custom-checkbox">
+							<input type="checkbox" name="predefined" value="{{ ingredient }}" onchange="addPredefinedIngredient(this)">
+							<span class="checkmark"></span> {{ ingredient }}
+						</label>
+					{% endfor %}
+				</div>
 
 
                   
-                    <div id="custom-ingredients" class="mb-3"></div>
+                    <div id="custom-ingredients" class="mb-3">
+					<!-- Select All Checkbox -->
+				<label class="custom-checkbox">
+					<input type="checkbox" id="select-all" onchange="toggleAllPredefinedIngredients(this)">
+					<span class="checkmark"></span> <strong>Select All Predefined Ingredients</strong>
+				</label>
+				</div>
 					 <div class="text-center">
                     <button type="button" class="btn btn-success mb-3 " onclick="addCustomIngredient()" style="font-weight: 600;background: #04908d;border-radius: 50px;border-color: #2dbfd4bf;">Add Custom Ingredient</button>
 					</div>
@@ -67,10 +79,14 @@
                     <button type="submit" class="btn btn-success" style="font-weight: 800;background: #04908d;border-radius: 50px;border-color: #2dbfd4bf;">Optimize</button>
 				</div>
                 </form>
+				
+
+
             </div>
 
             <!-- Results Section -->
 				<div class="col-md-4 cstm">
+				
 					{% if results %}
 						<h4 class="text-center" style="color: #2897a7; font-family: system-ui;">Optimization Results</h4>
 						{% if results.error %}
@@ -80,7 +96,7 @@
 								<p style="margin: 0;"><strong>Total Cost:</strong> ${{ "%.2f"|format(results.cost) }}</p>
 								<p style="margin: 0;"><strong>Status:</strong> {{ results.status }}</p>
 							</div>
-
+				<div id="ingredientPieChart"></div>
 							<ul class="list-group">
 								{% set sorted_variables = results.variables | sort(attribute='1', reverse=True) %}
 								
@@ -133,9 +149,91 @@
 
 
         </div>
+		
+
+
+
+
+
+
+<script>
+    // Data preparation
+    var ingredients = [
+        {% for var, value in results.variables %}
+            {% if value > 0 %}
+            {
+                name: "{{ var.split('_')[1] }}",
+                value: {{ value }},
+                isNonVeg: {% if var.split('_')[1] in ["Chicken", "Beef", "Mutton", "Egg"] %}true{% else %}false{% endif %}
+            },
+            {% endif %}
+        {% endfor %}
+    ];
+
+    // Sort ingredients by value in descending order
+    ingredients.sort((a, b) => b.value - a.value);
+
+    // Generate random transparent colors for each segment
+    function getRandomColor() {
+        const color = Math.floor(Math.random() * 16777215).toString(16);
+        return '#' + color.padStart(6, '0') + '80'; // Adding '80' for 50% transparency
+    }
+
+    var series = ingredients.map(item => item.value);
+    var labels = ingredients.map(item => item.name);
+    var colors = ingredients.map(item => getRandomColor());
+    var borderColors = ingredients.map(item => item.isNonVeg ? '#e74c3c' : '#4caf50');
+
+    var options = {
+        series: series,
+        chart: {
+            type: 'pie',
+            width: 400,
+        },
+        labels: labels,
+        colors: colors,
+        fill: {
+            type: 'solid',
+        },
+        stroke: {
+            width: 2,
+            colors: borderColors,
+        },
+        legend: {
+            formatter: function(seriesName, opts) {
+                const value = series[opts.seriesIndex];
+                const color = ingredients[opts.seriesIndex].isNonVeg ? '#e74c3c' : '#4caf50';
+                return `<span style="color: ${color}; font-weight: bold;">
+                            ${seriesName}: ${value} g
+                        </span>`;
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return value + ' g';
+                }
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#ingredientPieChart"), options);
+    chart.render();
+</script>
+
+
+
     
 
     <script>
+	function toggleAllPredefinedIngredients(selectAllCheckbox) {
+    const checkboxes = document.querySelectorAll('input[name="predefined"]');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+        addPredefinedIngredient(checkbox);
+    });
+}
         function addPredefinedIngredient(checkbox) {
             const tableBody = document.getElementById('table-body');
             const ingredient = checkbox.value;
