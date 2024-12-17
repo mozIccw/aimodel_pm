@@ -39,9 +39,32 @@ def index():
             dict_costs[ingredient] = data[5]
             variables.append(ingredient)
 
+        # Collect custom ingredients from form
+        custom_names = request.form.getlist("custom_ingredient_name")
+        custom_proteins = request.form.getlist("custom_protein")
+        custom_fats = request.form.getlist("custom_fat")
+        custom_fibres = request.form.getlist("custom_fibre")
+        custom_salts = request.form.getlist("custom_salt")
+        custom_sugars = request.form.getlist("custom_sugar")
+        custom_costs = request.form.getlist("custom_cost")
+
+        # Add custom ingredients to nutrition and cost data
+        for i in range(len(custom_names)):
+            name = custom_names[i]
+            protein = float(custom_proteins[i])
+            fat = float(custom_fats[i])
+            fibre = float(custom_fibres[i])
+            salt = float(custom_salts[i])
+            sugar = float(custom_sugars[i])
+            cost = float(custom_costs[i])
+
+            nutrition.loc[name] = [protein, fat, fibre, salt, sugar]
+            dict_costs[name] = cost
+            variables.append(name)
+
         # Ensure there's at least one ingredient
         if not variables:
-            return render_template("index.html", results={"error": "Please select at least one ingredient."})
+            return render_template("index.html", results={"error": "Please select at least one ingredient or add a custom ingredient."})
 
         # Optimization model
         model = LpProblem("Optimize_Protein_Bar", LpMinimize)
@@ -61,15 +84,15 @@ def index():
         # Solve the model
         status = model.solve()
 
-       # Collect results
+        # Collect results
         results = {
             "cost": round(value(model.objective), 4),
             "status": LpStatus[status],
             "variables": [(f"Qty_{ingredient}", round(x[ingredient].varValue, 4)) for ingredient in variables],
         }
 
-
     return render_template("index.html", results=results)
+
 
 
 if __name__ == "__main__":
