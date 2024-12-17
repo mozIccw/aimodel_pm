@@ -177,28 +177,29 @@
             }
         }
 
-        function addCustomIngredient() {
-            const tableBody = document.getElementById('table-body');
-            const rowId = `custom-${Date.now()}`;
-            const row = document.createElement('tr');
-            row.id = rowId;
-            row.innerHTML = `
-                <td><input type="text" name="ingredient" class="form-control" placeholder="Ingredient" required></td>
-                <td>
-                    <select name="type" class="form-control" required>
-                        <option value="Veg">Veg</option>
-                        <option value="Non-Veg">Non-Veg</option>
-                    </select>
-                </td>
-                <td><input type="number" step="0.0001" name="protein" class="form-control" placeholder="in gram" required></td>
-                <td><input type="number" step="0.0001" name="fat" class="form-control" placeholder="in gram" required></td>
-                <td><input type="number" step="0.0001" name="fibre" class="form-control" placeholder="in gram" required></td>
-                <td><input type="number" step="0.0001" name="salt" class="form-control" placeholder="in gram" required></td>
-                <td><input type="number" step="0.0001" name="sugar" class="form-control" placeholder="in gram" required></td>
-                <td><input type="number" step="0.0001" name="cost" class="form-control" placeholder="$ per gram" required  style="width:90px;"></td>
-                <td><span class="delete-icon" onclick="deleteRow('${rowId}')">&#x2716;</span></td>`;
-            tableBody.appendChild(row);
-        }
+			function addCustomIngredient() {
+				const tableBody = document.getElementById('table-body');
+				const rowId = `custom-${Date.now()}`;
+				const row = document.createElement('tr');
+				row.id = rowId;
+				row.innerHTML = `
+					<td><input type="text" name="custom_ingredient_name" class="form-control" placeholder="Ingredient" required></td>
+					<td>
+						<select name="custom_ingredient_type" class="form-control" required>
+							<option value="Veg">Veg</option>
+							<option value="Non-Veg">Non-Veg</option>
+						</select>
+					</td>
+					<td><input type="number" step="0.0001" name="custom_protein" class="form-control" placeholder="in gram" required></td>
+					<td><input type="number" step="0.0001" name="custom_fat" class="form-control" placeholder="in gram" required></td>
+					<td><input type="number" step="0.0001" name="custom_fibre" class="form-control" placeholder="in gram" required></td>
+					<td><input type="number" step="0.0001" name="custom_salt" class="form-control" placeholder="in gram" required></td>
+					<td><input type="number" step="0.0001" name="custom_sugar" class="form-control" placeholder="in gram" required></td>
+					<td><input type="number" step="0.0001" name="custom_cost" class="form-control" placeholder="$ per gram" required style="width:90px;"></td>
+					<td><span class="delete-icon" onclick="deleteRow('${rowId}')">&#x2716;</span></td>`;
+				tableBody.appendChild(row);
+			}
+
 
         function deleteRow(rowId) {
             const row = document.getElementById(rowId);
