@@ -82,12 +82,50 @@
 							</div>
 
 							<ul class="list-group">
-								{% for var, value in results.variables %}
-									<li class="list-group-item" style="background-color: {% if value == 0 %}#ffcccc{% else %}#4caf5099{% endif %};">
-										{{ var }}: {{ value }} g
-									</li>
+								{% set sorted_variables = results.variables | sort(attribute='1', reverse=True) %}
+								
+								{# First Loop: Quantities greater than 0.001 #}
+								{% for var, value in sorted_variables %}
+									{% set ingredient_name = var.split('_')[1] %}
+									{% set type = "Non-Veg" if ingredient_name in ["Chicken", "Beef", "Mutton", "Egg"] else "Veg" %}
+									{% set background_color = "#e74c3cc9" if type == "Non-Veg" else "#4caf5087" %}
+									{% if value > 0.001 %}
+										<li class="list-group-item" style="background-color: {{ background_color }}; color: white;font-weight: 800;">
+											{{ var }}: {{ value }} g
+										</li>
+									{% endif %}
 								{% endfor %}
+
+								{# Second Loop: Quantities between 0.0 and 0.001 #}
+								{% for var, value in sorted_variables %}
+									{% set ingredient_name = var.split('_')[1] %}
+									{% set type = "Non-Veg" if ingredient_name in ["Chicken", "Beef", "Mutton", "Egg"] else "Veg" %}
+									{% set background_color = "#e74c3cc9" if type == "Non-Veg" else "#4caf5087" %}
+									{% if value > 0.0 and value <= 0.001 %}
+										<li class="list-group-item" style="background-color: {{ background_color }}; color: #ffffff8c;font-weight: 800;">
+											{{ var }}: {{ value }} g
+										</li>
+									{% endif %}
+								{% endfor %}
+
+								{# Third Loop: Quantities equal to 0.0 #}
+								{% for var, value in sorted_variables %}
+									{% set ingredient_name = var.split('_')[1] %}
+									{% set type = "Non-Veg" if ingredient_name in ["Chicken", "Beef", "Mutton", "Egg"] else "Veg" %}
+									{% set background_color = "#e74c3cc9" if type == "Non-Veg" else "#4caf5087" %}
+									{% if value == 0.0 %}
+										<li class="list-group-item" style="background-color: {{ background_color }}; color: #ffffff8c;font-weight: 800;">
+											{{ var }}: {{ value }} g
+										</li>
+									{% endif %}
+								{% endfor %}
+								
+							<li class="list-group-item" style="font-size: 10px;border-radius: 9px;">
+											*Note: Ingredients with a <span style="color: green;"><b>green background</b></span> are vegetarian, while those with a <span style="color: red;"><b>red background</b></span> are non-vegetarian.
+										</li>
 							</ul>
+
+
 						{% endif %}
 					{% endif %}
 				</div>
