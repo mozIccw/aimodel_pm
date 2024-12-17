@@ -92,7 +92,7 @@
 						{% if results.error %}
 							<p class="text-danger">{{ results.error }}</p>
 						{% else %}
-							<div class="cstmbg" style="background: {% if results.status == 'Optimal' or results.status == 'Feasible' %}#4CAF50{% else %}#e74c3c{% endif %}; color: white; display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 70px; padding: 10px;font-size: 18px;font-weight: 800;">
+							<div class="cstmbg" style="background: {% if results.status == 'Optimal' or results.status == 'Feasible' %}#048a87b8{% else %}#be381fd1{% endif %}; color: white; display: flex; flex-direction: row; justify-content: space-between; align-items: center; height: 70px; padding: 10px;font-size: 18px;font-weight: 800;">
 								<p style="margin: 0;"><strong>Total Cost:</strong> ${{ "%.2f"|format(results.cost) }}</p>
 								<p style="margin: 0;"><strong>Status:</strong> {{ results.status }}</p>
 							</div>
